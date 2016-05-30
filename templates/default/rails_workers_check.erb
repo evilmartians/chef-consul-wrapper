@@ -1,0 +1,12 @@
+#!/bin/bash
+<%
+if @appserver == 'unicorn'
+  grep_regex = '[u]nicorn_rails worker'
+  minimum = @lower_limit
+end
+-%>
+workers=$(ps aux | grep '<%= grep_regex %>' | grep -ce '^<%= @username %>')
+echo $workers
+
+if [ "${workers}" -ge "<%= minimum %>" ]; then exit 0; fi
+exit 255

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+processes=$(ps aux|grep -Eo "[o]rg.elasticsearch.bootstrap.Elasticsearch"|wc -l)
+
+if [ "${processes}" -eq "1" ]; then exit 0; fi
+exit 255

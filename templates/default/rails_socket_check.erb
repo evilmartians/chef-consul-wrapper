@@ -1,0 +1,13 @@
+#!/bin/bash
+<%
+if @unix
+  nc_cmd = "nc -U #{@socket}"
+else
+  nc_cmd = "nc #{@address} #{@socket}"
+end
+-%>
+echo -e 'GET <%= @url %> HTTP/1.1\r\nhost: <%= @hostname %>\r\nConnection: close\r\n\r\n' | \
+  <%= nc_cmd %> | \
+  grep 'HTTP/1.1 200 OK'
+
+if [ $? != 0 ]; then exit 255; fi
