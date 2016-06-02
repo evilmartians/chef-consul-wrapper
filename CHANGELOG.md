@@ -3,6 +3,9 @@ consul_wrapper CHANGELOG
 
 This file is used to list changes made in each version of the consul_wrapper cookbook.
 
+# 0.1.2
+- [Kirill Kouznetsov] - allow default recipe to be ran under Chef Solo for test purposes.
+
 # 0.1.1
 - [Kirill Kouznetsov] - resources/providers for rails appliation, elasticsearch, redis and postgresql were initially added instead of default recipes.
 
