@@ -8,24 +8,26 @@
 #
 
 interface = node['consul_wrapper']['listen_interface']
-ip = if node['network']['interfaces'].key?(interface)
-       node['network']['interfaces'][interface]['addresses'].find { |address, data| data['family'] == 'inet' }.first
-     else
-       '127.0.0.1'
-     end
+ip = '127.0.0.1'
+start_join = [ip]
 
 if node['network']['interfaces'].key?(interface)
-  consul_nodes = search(:node, "role:consul_master AND chef_environment:#{node.chef_environment}")
+  ip = node['network']['interfaces'][interface]['addresses'].find { |address, data| data['family'] == 'inet' }.first
+  start_join = [ip]
 
-  start_join = []
+  unless Chef::Config[:solo]
+    consul_nodes = search(:node, "role:consul_master AND chef_environment:#{node.chef_environment}")
 
-  consul_nodes.each do |item|
+    start_join = []
+
+    consul_nodes.each do |item|
     start_join << item['network']['interfaces'][interface]['addresses'].find { |address, data| data['family'] == 'inet' }.first
+    end
   end
 end
 
-node.set[:consul][:config][:bind_addr]  = ip
-node.set[:consul][:config][:start_join] = start_join
+node.set['consul']['config']['bind_addr']  = ip
+node.set['consul']['config']['start_join'] = start_join
 
 include_recipe 'consul_wrapper::agent'
-include_recipe 'consul_wrapper::server' if node[:consul][:config][:server]
+include_recipe 'consul_wrapper::server' if node['consul']['config']['server']
