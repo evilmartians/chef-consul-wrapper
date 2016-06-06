@@ -18,10 +18,10 @@ if node['network']['interfaces'].key?(interface)
   unless Chef::Config[:solo]
     consul_nodes = search(:node, "role:consul_master AND chef_environment:#{node.chef_environment}")
 
-    start_join = []
+    start_join = [] if consul_nodes.size > 0
 
     consul_nodes.each do |item|
-    start_join << item['network']['interfaces'][interface]['addresses'].find { |address, data| data['family'] == 'inet' }.first
+      start_join << item['network']['interfaces'][interface]['addresses'].find { |address, data| data['family'] == 'inet' }.first if item['network']['interfaces'].key?(interface)
     end
   end
 end
