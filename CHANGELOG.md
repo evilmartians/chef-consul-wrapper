@@ -3,6 +3,10 @@ consul_wrapper CHANGELOG
 
 This file is used to list changes made in each version of the consul_wrapper cookbook.
 
+# 0.1.3
+
+- [Kirill Kouznetsov] - check found chef nodes if designated consul network interface presents
+
 # 0.1.2
 - [Kirill Kouznetsov] - allow default recipe to be ran under Chef Solo for test purposes.
 
