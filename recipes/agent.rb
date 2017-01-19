@@ -7,6 +7,4 @@
 # All rights reserved - Do Not Redistribute
 #
 
-node.set['consul']['ui'] = true
-
 include_recipe 'consul'

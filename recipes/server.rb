@@ -16,6 +16,7 @@ ip = if node['consul_wrapper']['listen_ip']
        '127.0.0.1'
      end
 
+node.set['consul']['ui'] = true
 node.default['consul']['config']['server'] = true
 node.default['consul']['config']['verify_incoming'] = true
 node.default['consul']['config']['verify_outgoing'] = true
