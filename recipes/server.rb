@@ -24,4 +24,10 @@ node.default['consul']['config']['bind_addr'] = ip
 node.default['consul']['config']['advertise_addr'] = ip
 node.default['consul']['config']['advertise_addr_wan'] = ip
 
-include_recipe 'consul::default'
+include_recipe 'consul'
+
+directory '/var/lib/consul/checks' do
+  recursive true
+  owner 'consul'
+  group 'consul'
+end
