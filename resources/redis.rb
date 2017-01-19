@@ -9,54 +9,39 @@
 property :service_name, String, name_property: true
 property :address, String, default: '127.0.0.1'
 property :port, Fixnum, default: 6379
-property :tags, Array, default: node.chef_environment.split('_') + ['redis']
-
+property :tags, Array, default: []
 default_action :add
 
 action :add do
   service_type = 'redis'
 
-  tags(tags + [service_name])
+  tags(tags + service_name.split(/[-_]/) + node.chef_environment.split(/[-_]/) + ['redis'])
 
-  directory '/var/lib/consul/checks' do
-    recursive true
-    owner 'consul'
-    group 'consul'
-  end
-
-  template "/var/lib/consul/checks/#{service_type}_#{service_name}_process_check" do
-    source "#{service_type}_process_check.erb"
-    cookbook 'consul_wrapper'
-    owner  'consul'
-    group  'consul'
-    mode   '0755'
-  end
-
-  consul_definition "#{service_type}_#{service_name}" do
+  consul_definition "#{service_type}-#{service_name}" do
     type 'service'
     parameters(tags: tags, address: address, port: port)
     notifies :reload, 'consul_service[consul]'
   end
 
-  consul_definition "#{service_type}_#{service_name}_process" do
+  consul_definition "#{service_type}-#{service_name}-process" do
     type 'check'
     parameters(
-      script: "/var/lib/consul/checks/#{service_type}_process_check",
+      script: "/bin/ps aux| /bin/grep -Eo '[r]edis-server #{address}:#{port}'",
       interval: '15s',
-      notes: "#{service.capitalize}_#{name.capitalize} should have process with cmd: redis-server #{address}:#{port}",
-      service_id: "#{service_type}_#{service_name}"
+      notes: "#{service_type}-#{name} should have process with cmd: redis-server #{address}:#{port}",
+      service_id: "#{service_type}-#{service_name}"
     )
     notifies :reload, 'consul_service[consul]'
   end
 
-  consul_definition "#{service_type}_#{service_name}_port" do
+  consul_definition "#{service_type}-#{service_name}_port" do
     type 'check'
     parameters(
       tcp: "#{address}:#{port}",
       interval: '15s',
       timeout: '1s',
-      notes: "#{service.capitalize}_#{name.capitalize} should listen on #{address}:#{port}",
-      service_id: "#{service_type}_#{service_name}"
+      notes: "#{service_type}-#{name} should listen on #{address}:#{port}",
+      service_id: "#{service_type}-#{service_name}"
     )
     notifies :reload, 'consul_service[consul]'
   end

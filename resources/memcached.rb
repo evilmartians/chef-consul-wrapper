@@ -1,30 +1,21 @@
 #
 # Cookbook Name:: consul_wrapper
-# Resource:: postgresql
+# Resource:: memcached
 #
 # Copyright 2016, Evil Martians
 #
-# All rights reserved - Do Not Elasticsearchtribute
+# All rights reserved - Do Not Redistribute
 #
-
 property :service_name, String, name_property: true
 property :address, String, default: '127.0.0.1'
-property :port, Fixnum, default: 5432
+property :port, Fixnum, default: 11_211
 property :tags, Array, default: []
-
 default_action :add
 
 action :add do
-  service_type = 'postgresql'
+  service_type = 'memcached'
 
-  tags(tags + service_name.split(/[-_]/) + node.chef_environment.split(/[-_]/) + %w(postgresql db database))
-
-  sudo "#{service_type}-check" do
-    user 'consul'
-    runas 'postgres'
-    commands ['/usr/bin/psql -p [0-9]* -U postgres -d postgres -A -t -c select 1']
-    nopasswd true
-  end
+  tags(tags + service_name.split(/[-_]/) + node.chef_environment.split(/[-_]/) + %w(memcached memcache))
 
   consul_definition "#{service_type}-#{service_name}" do
     type 'service'
@@ -32,12 +23,12 @@ action :add do
     notifies :reload, 'consul_service[consul]'
   end
 
-  consul_definition "#{service_type}-#{service_name}-check" do
+  consul_definition "#{service_type}-#{service_name}_process" do
     type 'check'
     parameters(
-      script: "/usr/bin/sudo -u postgres /usr/bin/psql -p #{port} -U postgres -d postgres -A -t -c 'select 1' >/dev/null 2>&1",
-      interval: '30s',
-      notes: "#{service_type}-#{service_name} should serve queries",
+      script: "/bin/ps xau | /bin/grep '[m]emcached.* -l #{address}' | /bin/grep  -- '-p #{port}'",
+      interval: '15s',
+      notes: "#{service_type}-#{service_name} should have process with cmd: memcached #{address}:#{port}",
       service_id: "#{service_type}-#{service_name}"
     )
     notifies :reload, 'consul_service[consul]'

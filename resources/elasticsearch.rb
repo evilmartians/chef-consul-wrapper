@@ -9,8 +9,8 @@
 
 property :service_name, String, name_property: true
 property :address, String, default: '127.0.0.1'
-property :port, Fixnum, default: 9200
-property :tags, Array, default:  node.chef_environment.split('_') + ['elasticsearch']
+property :port, Integer, default: 9200
+property :tags, Array, default: node.chef_environment.split('_') + ['elasticsearch']
 
 default_action :add
 

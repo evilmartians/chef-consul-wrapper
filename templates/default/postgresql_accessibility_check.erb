@@ -1,7 +1,0 @@
-#!/bin/bash
-
-/usr/bin/sudo -u postgres /usr/bin/psql -p 6432 -U postgres -d postgres -A -t -c 'select 1'
-result=$?
-
-if [ "${result}" -eq "0" ]; then exit 0; fi
-exit 255

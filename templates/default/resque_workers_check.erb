@@ -1,7 +1,0 @@
-#!/bin/bash
-
-workers=$(ps aux|grep -Eo "[r]esque-1.24.1: (Forked|Waiting)"|wc -l)
-echo $workers
-
-if [ "${workers}" -ge "<%= node[:groupon][:resque_workers]%>" ]; then exit 0; fi
-exit 255

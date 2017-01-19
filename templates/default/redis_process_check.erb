@@ -1,6 +1,0 @@
-#!/bin/bash
-
-processes=$(ps aux|grep -Eo "[r]edis-server <%= node[:redis][:bind]%>:<%= node[:redis][:port]%>"|wc -l)
-
-if [ "${processes}" -eq "1" ]; then exit 0; fi
-exit 255
