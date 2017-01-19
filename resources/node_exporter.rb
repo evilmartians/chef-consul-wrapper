@@ -2,7 +2,7 @@
 # Cookbook Name:: consul_wrapper
 # Resource:: node_exporter
 #
-# Copyright 2016, Evil Martians
+# Copyright 2017, Evil Martians
 #
 # All rights reserved - Do Not Elasticsearchtribute
 #

@@ -3,6 +3,7 @@ default['consul_wrapper']['disable']                  = false
 default['consul_wrapper']['search_string']            = "role:consul_master AND chef_environment:#{node.chef_environment}"
 default['consul_wrapper']['secrets']['data_bag']      = 'secrets'
 default['consul_wrapper']['secrets']['data_bag_item'] = 'consul_certificates'
+default['consul_wrapper']['include_recipes'] = %(node_exporter)
 
 default['consul']['config']['server']              = false
 default['consul']['config']['datacenter']          = 'SETMEPLEASE'

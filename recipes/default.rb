@@ -80,3 +80,9 @@ unless node['consul_wrapper']['disable']
   include_recipe 'consul_wrapper::agent'
   include_recipe 'consul_wrapper::server' if node['consul']['config']['server']
 end
+
+node['consul_wrapper']['include_recipes'].each do |r|
+  include_recipe "consul_wrapper::#{r}"
+end
+
+  
