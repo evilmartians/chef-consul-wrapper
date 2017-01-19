@@ -3,6 +3,17 @@ consul_wrapper CHANGELOG
 
 This file is used to list changes made in each version of the consul_wrapper cookbook.
 
+# 0.1.15
+
+- [Kirill Kouznetsov] - new resource for `node_exporter` service.
+- [Kirill Kouznetsov] - refactored resources:
+    * elasticsearch
+    * memcached
+    * postgresql
+    * rails
+    * redis
+    * sidekiq
+
 # 0.1.3
 
 - [Kirill Kouznetsov] - check found chef nodes if designated consul network interface presents
