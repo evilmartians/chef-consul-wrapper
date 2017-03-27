@@ -10,20 +10,15 @@
 property :service_name, String, name_property: true
 property :address, String, default: '127.0.0.1'
 property :port, Integer, default: 9100
-property :tags, Array, default: node.chef_environment.split('_') + %w(node_exporter prometheus)
+property :http_location, String, default: '/metrics'
+property :tags, Array, default: node.chef_environment.split('_')
 
 default_action :add
 
 action :add do
-  tags(tags + [service_name])
+  tags(tags + [service_name] + %w(node_exporter prometheus))
 
   service_type = 'node_exporter'
-
-  directory '/var/lib/consul/checks' do
-    recursive true
-    owner 'consul'
-    group 'consul'
-  end
 
   consul_definition "#{service_type}_#{service_name}" do
     type 'service'
