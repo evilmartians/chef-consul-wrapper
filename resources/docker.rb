@@ -18,7 +18,7 @@ action :add do
 
   consul_definition "#{service_type}-#{service_name}" do
     type 'service'
-    parameters(tags: tags, address: address, port: port)
+    parameters(tags: tags)
     notifies :reload, 'consul_service[consul]'
   end
 
