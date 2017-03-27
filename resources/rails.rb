@@ -48,7 +48,7 @@ action :add do
   consul_definition "app-#{service_name}-workers-check" do
     type 'check'
     parameters(
-      script: "/usr/bin/test $(/bin/ps aux | /bin/grep '#{grep_regex}' | /bin/grep -ce '#{username}') -ge #{proc_lower_limit}",
+      script: "/usr/bin/test $(/bin/ps auxn | /bin/grep '#{grep_regex}' | /bin/grep -ce \"^[ \t]*$(id -u #{username})\") -ge #{proc_lower_limit}",
       interval: '15s',
       notes: "#{service_name} rails appserver should have workers running.",
       service_id: "application-#{service_name}"
