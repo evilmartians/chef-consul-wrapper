@@ -3,6 +3,19 @@ consul_wrapper CHANGELOG
 
 This file is used to list changes made in each version of the consul_wrapper cookbook.
 
+# 0.1.18
+
+- [Kirill Kouznetsov] - Docker service resource.
+
+# 0.1.17
+
+- [Kirill Kouznetsov] - grep running rails processes by user id, not by user name.
+
+# 0.1.16
+
+- [Kirill Kouznetsov] - new resource for `postgres_exporter` service.
+- [Kirill Kouznetsov] - add http checks for prometheus exporters.
+
 # 0.1.15
 
 - [Kirill Kouznetsov] - new resource for `node_exporter` service.
