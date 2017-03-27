@@ -25,7 +25,7 @@ action :add do
   consul_definition "#{service_type}-#{service_name}-process" do
     type 'check'
     parameters(
-      script: "/usr/bin/curl -s --unix-socket #{socket} http:/info",
+      script: "/bin/echo -e 'GET /info HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' | /bin/nc -U #{socket} | /bin/grep 'HTTP/1.1 200 OK'",
       interval: '15s',
       notes: "#{service_type}-#{service_name} should answer on #{socket} via http",
       service_id: "#{service_type}-#{service_name}"
