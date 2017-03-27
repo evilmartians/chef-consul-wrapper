@@ -27,7 +27,10 @@ unless node['consul_wrapper']['disable']
     end
   end
 
-  node.set['consul']['config']['bind_addr']  = ip
+  node.set['consul']['config']['bind_addr'] = ip
+  node.set['consul']['config']['addresses'] = {
+    'http' => ip
+  }
   node.set['consul']['config']['start_join'] = start_join
 
   node.set['consul']['service_shell'] = '/bin/bash' if node['platform_version'].to_f >= 16.04
@@ -84,5 +87,3 @@ end
 node['consul_wrapper']['include_recipes'].each do |r|
   include_recipe "consul_wrapper::#{r}"
 end
-
-  
