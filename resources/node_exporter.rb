@@ -37,4 +37,16 @@ action :add do
     )
     notifies :reload, 'consul_service[consul]'
   end
+
+  consul_definition "#{service_type}_#{service_name}_http" do
+    type 'check'
+    parameters(
+      http: "http://#{address}:#{port}#{http_location}",
+      interval: '15s',
+      timeout: '5s',
+      notes: "#{service_type}_#{service_name} should answer with metrics via http",
+      service_id: "#{service_type}_#{service_name}"
+    )
+    notifies :reload, 'consul_service[consul]'
+  end
 end
