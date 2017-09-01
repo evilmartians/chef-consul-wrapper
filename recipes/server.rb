@@ -37,3 +37,14 @@ directory '/var/lib/consul/checks' do
   owner 'consul'
   group 'consul'
 end
+
+firewall_rule 'consul_server' do
+  protocol :tcp
+  port 8300
+end
+
+firewall_rule 'consul_serf_wan' do
+  protocol :tcp
+  port 8302
+end
+
