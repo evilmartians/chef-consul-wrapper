@@ -3,6 +3,10 @@ consul_wrapper CHANGELOG
 
 This file is used to list changes made in each version of the consul_wrapper cookbook.
 
+## 0.2.2
+
+- [Kirill Kouznetsov] - Add firewall rules to open Consul ports
+
 ## 0.2.1
 
 - [Kirill Kouznetsov] - private ip selection was refactored.
