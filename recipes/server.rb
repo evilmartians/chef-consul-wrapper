@@ -16,6 +16,12 @@ private_ip = if node['consul_wrapper']['listen_ip']
                '127.0.0.1'
              end
 
+if node['consul']['config']['start_join_wan'].is_a?(Array) && !node['consul']['config']['start_join_wan'].empty?
+  public_interface = node['consul_wrapper']['public_interface']
+  public_ip = node['network']['interfaces'][public_interface]['addresses'].find { |address, data| data['family'] == 'inet' }.first
+  node.default['consul']['config']['advertise_addr_wan'] = public_ip
+end
+
 node.default['consul']['ui'] = true
 node.default['consul']['config']['server'] = true
 node.default['consul']['config']['verify_incoming'] = true
