@@ -8,32 +8,32 @@
 #
 
 unless node['consul_wrapper']['disable']
-  interface = node['consul_wrapper']['listen_interface']
-  ip = '127.0.0.1'
-  start_join = [ip]
+  private_interface = node['consul_wrapper']['private_interface']
+  private_ip = '127.0.0.1'
+  start_join = [private_ip]
 
-  if node['network']['interfaces'].key?(interface)
-    ip = node['network']['interfaces'][interface]['addresses'].find { |address, data| data['family'] == 'inet' }.first
-    start_join = [ip]
+  if node['network']['interfaces'].key?(private_interface)
+    private_ip = node['network']['interfaces'][private_interface]['addresses'].find { |address, data| data['family'] == 'inet' }.first
+    start_join = [private_ip]
 
     unless Chef::Config[:solo]
       consul_nodes = search(:node, node['consul_wrapper']['search_string'])
 
-      start_join = [] if consul_nodes.size > 0
+      start_join = [] unless consul_nodes.empty?
 
       consul_nodes.each do |item|
-        start_join << item['network']['interfaces'][interface]['addresses'].find { |address, data| data['family'] == 'inet' }.first if item['network']['interfaces'].key?(interface)
+        start_join << item['network']['interfaces'][private_interface]['addresses'].find { |address, data| data['family'] == 'inet' }.first if item['network']['interfaces'].key?(private_interface)
       end
     end
   end
 
-  node.set['consul']['config']['bind_addr'] = ip
-  node.set['consul']['config']['addresses'] = {
-    'http' => ip
-  }
-  node.set['consul']['config']['start_join'] = start_join
+  node.default['consul']['config']['bind_addr'] = '0.0.0.0'
+  node.default['consul']['config']['addresses']['http'] = private_ip if node['consul_wrapper']['listen_http_on_lan']
+  node.default['consul']['config']['start_join'] = start_join
+  node.default['consul']['config']['serf_lan_bind'] = private_ip
+  node.default['consul']['config']['advertise_addr'] = private_ip
 
-  node.set['consul']['service_shell'] = '/bin/bash' if node['platform_version'].to_f >= 16.04
+  node.default['consul']['service_shell'] = '/bin/bash' if node['platform_version'].to_f >= 16.04
 
   directory '/etc/consul' do
     owner 'root'
@@ -80,8 +80,8 @@ unless node['consul_wrapper']['disable']
     end
   end
 
-  include_recipe 'consul_wrapper::agent'
   include_recipe 'consul_wrapper::server' if node['consul']['config']['server']
+  include_recipe 'consul_wrapper::agent'
 end
 
 node['consul_wrapper']['include_recipes'].each do |r|
