@@ -3,20 +3,28 @@ consul_wrapper CHANGELOG
 
 This file is used to list changes made in each version of the consul_wrapper cookbook.
 
-# 0.1.18
+## 0.2.1
+
+- [Kirill Kouznetsov] - private ip selection was refactored.
+- [Kirill Kouznetsov] - serf_wan interface should be public.
+- [Kirill Kouznetsov] - Elasticsearch service checks were refactored.
+- [Kirill Kouznetsov] - Rails service http check was removed.
+- [Kirill Kouznetsov] - New resource for postgresql prometheus exporter.
+
+## 0.1.18
 
 - [Kirill Kouznetsov] - Docker service resource.
 
-# 0.1.17
+## 0.1.17
 
 - [Kirill Kouznetsov] - grep running rails processes by user id, not by user name.
 
-# 0.1.16
+## 0.1.16
 
 - [Kirill Kouznetsov] - new resource for `postgres_exporter` service.
 - [Kirill Kouznetsov] - add http checks for prometheus exporters.
 
-# 0.1.15
+## 0.1.15
 
 - [Kirill Kouznetsov] - new resource for `node_exporter` service.
 - [Kirill Kouznetsov] - refactored resources:
@@ -27,17 +35,20 @@ This file is used to list changes made in each version of the consul_wrapper coo
     * redis
     * sidekiq
 
-# 0.1.3
+## 0.1.3
 
 - [Kirill Kouznetsov] - check found chef nodes if designated consul network interface presents
 
-# 0.1.2
+## 0.1.2
+
 - [Kirill Kouznetsov] - allow default recipe to be ran under Chef Solo for test purposes.
 
-# 0.1.1
+## 0.1.1
+
 - [Kirill Kouznetsov] - resources/providers for rails appliation, elasticsearch, redis and postgresql were initially added instead of default recipes.
 
 # 0.0.1
+
 - [Maxim Filatov] - Initial release of consul_wrapper
 
 - - -
