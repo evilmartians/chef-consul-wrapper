@@ -8,14 +8,21 @@
 #
 property :service_name, String, name_property: true
 property :address, String, default: '127.0.0.1'
-property :port, Fixnum, default: 6379
+property :port, Integer, default: 6379
 property :tags, Array, default: []
 default_action :add
 
 action :add do
   service_type = 'redis'
 
-  tags(tags + service_name.split(/[-_]/) + node.chef_environment.split(/[-_]/) + ['redis'])
+  # rubocop:disable Style/TrailingCommaInArguments
+  tags(
+    tags +
+    service_name.split(/[-_]/) +
+    node.chef_environment.split(/[-_]/) +
+    ['redis']
+  )
+  # rubocop:enable Style/TrailingCommaInArguments
 
   consul_definition "#{service_type}-#{service_name}" do
     type 'service'
@@ -28,8 +35,10 @@ action :add do
     parameters(
       script: "/bin/ps aux| /bin/grep -Eo '[r]edis-server #{address}:#{port}'",
       interval: '15s',
+      # rubocop:disable LineLength
       notes: "#{service_type}-#{name} should have process with cmd: redis-server #{address}:#{port}",
-      service_id: "#{service_type}-#{service_name}"
+      # rubocop:enable LineLength
+      service_id: "#{service_type}-#{service_name}",
     )
     notifies :reload, 'consul_service[consul]'
   end
@@ -41,7 +50,7 @@ action :add do
       interval: '15s',
       timeout: '1s',
       notes: "#{service_type}-#{name} should listen on #{address}:#{port}",
-      service_id: "#{service_type}-#{service_name}"
+      service_id: "#{service_type}-#{service_name}",
     )
     notifies :reload, 'consul_service[consul]'
   end

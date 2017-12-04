@@ -3,6 +3,18 @@ consul_wrapper CHANGELOG
 
 This file is used to list changes made in each version of the consul_wrapper cookbook.
 
+## 0.3.0
+
+- [Kirill Kouznetsov] - change `node_exporter` & `postgres_exporter` service names in consul to `node-exporter` & `postgres-exporter` as underscores are unsupported by DNS.
+- [Kirill Kouznetsov] - register consul http port as a consul service if it is exposed to somewhere other than loopback network.
+- [Kirill Kouznetsov] - forced some more RuboCop rules, including trailing commas at the and of multiline hashes & lists for better diffs readability.
+- [Kirill Kouznetsov] - removed some UFW rules; use external cookbook instead if you want more.
+
+
+## 0.2.3
+
+- [Kirill Kouznetsov] - Some basic Consul 1.0.0 support.
+
 ## 0.2.2
 
 - [Kirill Kouznetsov] - Add firewall rules to open Consul ports

@@ -16,7 +16,14 @@ default_action :add
 action :add do
   service_type = 'elasticsearch'
 
-  tags(tags + service_name.split(/[-_]/) + node.chef_environment.split(/[-_]/) + %w(elasticsearch elastic))
+  # rubocop:disable Style/TrailingCommaInArguments
+  tags(
+    tags +
+    service_name.split(/[-_]/) +
+    node.chef_environment.split(/[-_]/) +
+    %w(elasticsearch elastic)
+  )
+  # rubocop:enable Style/TrailingCommaInArguments
 
   consul_definition "#{service_type}-#{service_name}" do
     type 'service'
@@ -27,13 +34,17 @@ action :add do
   consul_definition "#{service_type}-#{service_name}-process" do
     type 'check'
     parameters(
+      # rubocop:disable LineLength
       script: "/bin/ps xau | /bin/grep '[o]rg.elasticsearch.bootstrap.Elasticsearch'",
-      interval: '15s',
       notes: "#{service_type}-#{service_name} should have process with cmd: org.elasticsearch.bootstrap.Elasticsearch",
-      service_id: "#{service_type}-#{service_name}"
+      # rubocop:enable LineLength
+      interval: '15s',
+      service_id: "#{service_type}-#{service_name}",
     )
     notifies :reload, 'consul_service[consul]'
   end
+
+  notes = "#{service_type}-#{service_name} should listen on #{address}:#{port}"
 
   consul_definition "#{service_type}-#{service_name}-port" do
     type 'check'
@@ -41,8 +52,8 @@ action :add do
       tcp: "#{address}:#{port}",
       interval: '15s',
       timeout: '1s',
-      notes: "#{service_type}-#{service_name} should listen on #{address}:#{port}",
-      service_id: "#{service_type}-#{service_name}"
+      notes: notes,
+      service_id: "#{service_type}-#{service_name}",
     )
     notifies :reload, 'consul_service[consul]'
   end

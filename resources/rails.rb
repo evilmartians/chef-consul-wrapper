@@ -20,7 +20,14 @@ property :tags, Array, default: []
 default_action :add
 
 action :add do
-  tags(tags + service_name.split(/[-_]/) + node.chef_environment.split(/[-_]/) + %w(web app rails application))
+  # rubocop:disable Style/TrailingCommaInArguments
+  tags(
+    tags +
+    service_name.split(/[-_]/) +
+    node.chef_environment.split(/[-_]/) +
+    %w(web app rails application)
+  )
+  # rubocop:enable Style/TrailingCommaInArguments
 
   socket("/tmp/#{service_name}_rails.sock") unless socket
 
@@ -48,10 +55,12 @@ action :add do
   consul_definition "app-#{service_name}-workers-check" do
     type 'check'
     parameters(
+      # rubocop:disable LineLength
       script: "/usr/bin/test $(/bin/ps auxn | /bin/grep '#{grep_regex}' | /bin/grep -ce \"^[ \t]*$(id -u #{username})\") -ge #{proc_lower_limit}",
+      # rubocop:enable LineLength
       interval: '15s',
       notes: "#{service_name} rails appserver should have workers running.",
-      service_id: "application-#{service_name}"
+      service_id: "application-#{service_name}",
     )
     notifies :reload, 'consul_service[consul]'
   end
@@ -59,10 +68,12 @@ action :add do
   consul_definition "app-#{service_name}-socket-check" do
     type 'check'
     parameters(
+      # rubocop:disable LineLength
       script: "/bin/echo -e 'GET #{url} HTTP/1.1\\r\\nHost: #{hostname}\\r\\nConnection: close\\r\\n\\r\\n' | #{nc_cmd} | /bin/grep 'HTTP/1.1 200 OK'",
-      interval: '15s',
       notes: "#{service_name.capitalize} rails should serve requests on its socket.",
-      service_id: "application-#{service_name}"
+      # rubocop:enable LineLength
+      interval: '15s',
+      service_id: "application-#{service_name}",
     )
     notifies :reload, 'consul_service[consul]'
   end

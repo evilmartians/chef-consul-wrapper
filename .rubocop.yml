@@ -1,0 +1,10 @@
+Style/AndOr:
+  Enabled: false
+# LineLength:
+#   Enabled: false
+Metrics/BlockLength:
+  Enabled: false
+Style/TrailingCommaInArguments:
+  EnforcedStyleForMultiline: consistent_comma
+Style/TrailingCommaInLiteral:
+  EnforcedStyleForMultiline: consistent_comma

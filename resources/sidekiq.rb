@@ -9,13 +9,20 @@
 
 property :service_name, String, name_property: true
 property :username, String, default: 'root'
-property :min_procs, Fixnum, default: 1
+property :min_procs, Integer, default: 1
 property :tags, Array, default: []
 
 default_action :add
 
 action :add do
-  tags(tags + service_name.split(/[-_]/) + node.chef_environment.split(/[-_]/) + %w(queue sidekiq))
+  # rubocop:disable Style/TrailingCommaInArguments
+  tags(
+    tags +
+    service_name.split(/[-_]/) +
+    node.chef_environment.split(/[-_]/) +
+    %w(queue sidekiq)
+  )
+  # rubocop:enable Style/TrailingCommaInArguments
 
   proc_lower_limit = min_procs
 
@@ -30,10 +37,12 @@ action :add do
   consul_definition "sidekiq-#{service_name}-workers-check" do
     type 'check'
     parameters(
+      # rubocop:disable LineLength
       script: "/usr/bin/test $(/bin/ps aux | /bin/grep -Eo '#{grep_regex}' | /bin/grep -ce '#{username}') -ge #{proc_lower_limit}",
+      # rubocop:enable LineLength
       interval: '15s',
       notes: "#{service_name} sidekiq should have enough workers running.",
-      service_id: "sidekiq-#{service_name}"
+      service_id: "sidekiq-#{service_name}",
     )
     notifies :reload, 'consul_service[consul]'
   end

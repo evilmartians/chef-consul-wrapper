@@ -18,34 +18,38 @@ default_action :add
 action :add do
   tags(tags + [service_name] + %w(postgres_exporter prometheus))
 
-  service_type = 'postgres_exporter'
+  service_type = 'postgres-exporter'
 
-  consul_definition "#{service_type}_#{service_name}" do
+  consul_definition "#{service_type}-#{service_name}" do
     type 'service'
     parameters(tags: tags, address: address, port: port)
     notifies :reload, 'consul_service[consul]'
   end
 
-  consul_definition "#{service_type}_#{service_name}_port" do
+  notes = "#{service_type}_#{service_name} should listen on #{address}:#{port}"
+
+  consul_definition "#{service_type}-#{service_name}_port" do
     type 'check'
     parameters(
       tcp: "#{address}:#{port}",
       interval: '15s',
       timeout: '1s',
-      notes: "#{service_type}_#{service_name} should listen on #{address}:#{port}",
-      service_id: "#{service_type}_#{service_name}"
+      notes: notes,
+      service_id: "#{service_type}-#{service_name}",
     )
     notifies :reload, 'consul_service[consul]'
   end
 
-  consul_definition "#{service_type}_#{service_name}_http" do
+  notes = "#{service_type}_#{service_name} should answer with metrics via http"
+
+  consul_definition "#{service_type}-#{service_name}_http" do
     type 'check'
     parameters(
       http: "http://#{address}:#{port}#{http_location}",
       interval: '15s',
       timeout: '5s',
-      notes: "#{service_type}_#{service_name} should answer with metrics via http",
-      service_id: "#{service_type}_#{service_name}"
+      notes: notes,
+      service_id: "#{service_type}-#{service_name}",
     )
     notifies :reload, 'consul_service[consul]'
   end

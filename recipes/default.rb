@@ -8,32 +8,52 @@
 #
 
 unless node['consul_wrapper']['disable']
-  private_interface = node['consul_wrapper']['private_interface']
+  private_interface_name = node['consul_wrapper']['private_interface']
   private_ip = '127.0.0.1'
   start_join = [private_ip]
 
-  if node['network']['interfaces'].key?(private_interface)
-    private_ip = node['network']['interfaces'][private_interface]['addresses'].find { |address, data| data['family'] == 'inet' }.first
+  if node['network']['interfaces'].key?(private_interface_name)
+    interface = node['network']['interfaces'][private_interface_name]
+    interface_addresses = interface['addresses'].find do |_address, data|
+      data['family'] == 'inet'
+    end
+    private_ip = interface_addresses.first
+
     start_join = [private_ip]
+  end
 
-    unless Chef::Config[:solo]
-      consul_nodes = search(:node, node['consul_wrapper']['search_string'])
+  if !Chef::Config[:solo] and
+     node['network']['interfaces'].key?(private_interface_name)
+    consul_nodes = search(:node, node['consul_wrapper']['search_string'])
 
-      start_join = [] unless consul_nodes.empty?
+    start_join = [] unless consul_nodes.empty?
 
-      consul_nodes.each do |item|
-        start_join << item['network']['interfaces'][private_interface]['addresses'].find { |address, data| data['family'] == 'inet' }.first if item['network']['interfaces'].key?(private_interface)
+    consul_nodes.each do |item|
+      next unless item['network']['interfaces'].key?(private_interface_name)
+      interface = item['network']['interfaces'][private_interface_name]
+      interface_addresses = interface['addresses'].find do |_address, data|
+        data['family'] == 'inet'
       end
+      start_join << interface_addresses.first
     end
   end
 
   node.default['consul']['config']['bind_addr'] = '0.0.0.0'
-  node.default['consul']['config']['addresses']['http'] = private_ip if node['consul_wrapper']['listen_http_on_lan']
+  if node['consul_wrapper']['listen_http_on_lan']
+    node.default['consul']['config']['addresses']['http'] = private_ip
+  end
   node.default['consul']['config']['start_join'] = start_join
-  node.default['consul']['config']['serf_lan_bind'] = private_ip
   node.default['consul']['config']['advertise_addr'] = private_ip
 
-  node.default['consul']['service_shell'] = '/bin/bash' if node['platform_version'].to_f >= 16.04
+  if node['consul']['version'].to_i >= 1
+    node.default['consul']['config']['serf_lan'] = private_ip
+  else
+    node.default['consul']['config']['serf_lan_bind'] = private_ip
+  end
+
+  if node['platform_version'].to_f >= 16.04
+    node.default['consul']['service_shell'] = '/bin/bash'
+  end
 
   directory '/etc/consul' do
     owner 'root'
@@ -43,7 +63,8 @@ unless node['consul_wrapper']['disable']
     not_if { ::File.directory?('/etc/consul') }
   end
 
-  if node['consul']['config']['verify_incoming'] || node['consul']['config']['verify_outgoing']
+  if node['consul']['config']['verify_incoming'] or
+     node['consul']['config']['verify_outgoing']
     %w(
       /etc/consul/ssl
       /etc/consul/ssl/CA
@@ -62,28 +83,50 @@ unless node['consul_wrapper']['disable']
       owner 'root'
       group 'root'
       mode '0644'
-      content Chef::EncryptedDataBagItem.load(node['consul_wrapper']['secrets']['data_bag'], node['consul_wrapper']['secrets']['data_bag_item'])['ca_file']
+      content Chef::EncryptedDataBagItem.load(
+        node['consul_wrapper']['secrets']['data_bag'],
+        node['consul_wrapper']['secrets']['data_bag_item'],
+      )['ca_file']
     end
 
     file node['consul']['config']['cert_file'] do
       owner 'root'
       group 'root'
       mode '0644'
-      content Chef::EncryptedDataBagItem.load(node['consul_wrapper']['secrets']['data_bag'], node['consul_wrapper']['secrets']['data_bag_item'])['cert_file']
+      content Chef::EncryptedDataBagItem.load(
+        node['consul_wrapper']['secrets']['data_bag'],
+        node['consul_wrapper']['secrets']['data_bag_item'],
+      )['cert_file']
     end
 
     file node['consul']['config']['key_file'] do
       owner 'root'
       group 'root'
       mode '0644'
-      content Chef::EncryptedDataBagItem.load(node['consul_wrapper']['secrets']['data_bag'], node['consul_wrapper']['secrets']['data_bag_item'])['key_file']
+      content Chef::EncryptedDataBagItem.load(
+        node['consul_wrapper']['secrets']['data_bag'],
+        node['consul_wrapper']['secrets']['data_bag_item'],
+      )['key_file']
     end
   end
 
   include_recipe 'consul_wrapper::server' if node['consul']['config']['server']
   include_recipe 'consul_wrapper::agent'
-end
 
-node['consul_wrapper']['include_recipes'].each do |r|
-  include_recipe "consul_wrapper::#{r}"
+  consul_definition 'consul-http' do
+    type 'service'
+    parameters(
+      tags: %w(consul consul-http),
+      address: private_ip,
+      port: 8500,
+    )
+    only_if do
+      node['consul_wrapper']['listen_http_on_lan']
+    end
+    notifies :reload, 'consul_service[consul]'
+  end
+
+  node['consul_wrapper']['include_recipes'].each do |r|
+    include_recipe "consul_wrapper::#{r}"
+  end
 end
