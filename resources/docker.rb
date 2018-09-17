@@ -14,30 +14,24 @@ default_action :add
 action :add do
   service_type = 'docker'
 
-  # rubocop:disable Style/TrailingCommaInArguments
-  tags(
-    tags +
-    service_name.split(/[-_]/) +
-    node.chef_environment.split(/[-_]/) +
-    ['docker']
-  )
-  # rubocop:enable Style/TrailingCommaInArguments
+  tags = new_resource.tags +
+         new_resource.service_name.split(/[-_]/) +
+         node.chef_environment.split(/[-_]/) +
+         ['docker']
 
-  consul_definition "#{service_type}-#{service_name}" do
+  consul_definition "#{service_type}-#{new_resource.service_name}" do
     type 'service'
     parameters(tags: tags)
     notifies :reload, 'consul_service[consul]'
   end
 
-  consul_definition "#{service_type}-#{service_name}-process" do
+  consul_definition "#{service_type}-#{new_resource.service_name}-process" do
     type 'check'
     parameters(
-      # rubocop:disable LineLength
-      script: "/bin/echo -e 'GET /info HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' | /bin/nc -U #{socket} | /bin/grep 'HTTP/1.1 200 OK'",
-      # rubocop:enable LineLength
+      script: "/bin/echo -e 'GET /info HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' | /bin/nc -U #{new_resource.socket} | /bin/grep 'HTTP/1.1 200 OK'",
       interval: '15s',
-      notes: "#{service_type}-#{service_name} should answer on #{socket}",
-      service_id: "#{service_type}-#{service_name}",
+      notes: "#{service_type}-#{new_resource.service_name} should answer on #{new_resource.socket}",
+      service_id: "#{service_type}-#{new_resource.service_name}",
     )
     notifies :reload, 'consul_service[consul]'
   end

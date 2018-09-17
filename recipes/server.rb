@@ -31,6 +31,7 @@ if node['consul']['config']['start_join_wan'].is_a?(Array) and
 
   firewall_rule 'consul_serf_wan' do
     port 8302
+    only_if { node['consul_wrapper']['enable_firewall'] }
   end
 end
 

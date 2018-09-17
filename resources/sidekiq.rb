@@ -15,34 +15,28 @@ property :tags, Array, default: []
 default_action :add
 
 action :add do
-  # rubocop:disable Style/TrailingCommaInArguments
-  tags(
-    tags +
-    service_name.split(/[-_]/) +
-    node.chef_environment.split(/[-_]/) +
-    %w(queue sidekiq)
-  )
-  # rubocop:enable Style/TrailingCommaInArguments
+  tags = new_resource.tags +
+         new_resource.service_name.split(/[-_]/) +
+         node.chef_environment.split(/[-_]/) +
+         %w[queue sidekiq]
 
-  proc_lower_limit = min_procs
+  proc_lower_limit = new_resource.min_procs
 
   grep_regex = '[s]idekiq .+ \[[0-9]+ of [0-9]+ busy\]'
 
-  consul_definition "sidekiq-#{service_name}" do
+  consul_definition "sidekiq-#{new_resource.service_name}" do
     type 'service'
     parameters(tags: tags)
     notifies :reload, 'consul_service[consul]'
   end
 
-  consul_definition "sidekiq-#{service_name}-workers-check" do
+  consul_definition "sidekiq-#{new_resource.service_name}-workers-check" do
     type 'check'
     parameters(
-      # rubocop:disable LineLength
-      script: "/usr/bin/test $(/bin/ps aux | /bin/grep -Eo '#{grep_regex}' | /bin/grep -ce '#{username}') -ge #{proc_lower_limit}",
-      # rubocop:enable LineLength
+      script: "/usr/bin/test $(/bin/ps aux | /bin/grep -Eo '#{grep_regex}' | /bin/grep -ce '#{new_resource.username}') -ge #{proc_lower_limit}",
       interval: '15s',
-      notes: "#{service_name} sidekiq should have enough workers running.",
-      service_id: "sidekiq-#{service_name}",
+      notes: "#{new_resource.service_name} sidekiq should have enough workers running.",
+      service_id: "sidekiq-#{new_resource.service_name}",
     )
     notifies :reload, 'consul_service[consul]'
   end

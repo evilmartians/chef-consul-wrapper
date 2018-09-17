@@ -65,12 +65,12 @@ unless node['consul_wrapper']['disable']
 
   if node['consul']['config']['verify_incoming'] or
      node['consul']['config']['verify_outgoing']
-    %w(
+    %w[
       /etc/consul/ssl
       /etc/consul/ssl/CA
       /etc/consul/ssl/certs
       /etc/consul/ssl/private
-    ).each do |dir|
+    ].each do |dir|
       directory dir do
         owner 'root'
         group 'root'
@@ -79,34 +79,16 @@ unless node['consul_wrapper']['disable']
       end
     end
 
-    file node['consul']['config']['ca_file'] do
-      owner 'root'
-      group 'root'
-      mode '0644'
-      content Chef::EncryptedDataBagItem.load(
-        node['consul_wrapper']['secrets']['data_bag'],
-        node['consul_wrapper']['secrets']['data_bag_item'],
-      )['ca_file']
-    end
-
-    file node['consul']['config']['cert_file'] do
-      owner 'root'
-      group 'root'
-      mode '0644'
-      content Chef::EncryptedDataBagItem.load(
-        node['consul_wrapper']['secrets']['data_bag'],
-        node['consul_wrapper']['secrets']['data_bag_item'],
-      )['cert_file']
-    end
-
-    file node['consul']['config']['key_file'] do
-      owner 'root'
-      group 'root'
-      mode '0644'
-      content Chef::EncryptedDataBagItem.load(
-        node['consul_wrapper']['secrets']['data_bag'],
-        node['consul_wrapper']['secrets']['data_bag_item'],
-      )['key_file']
+    %w[ca_file cert_file key_file].each do |filename|
+      file node['consul']['config'][filename] do
+        owner 'root'
+        group 'root'
+        mode '0644'
+        content data_bag_item(
+          node['consul_wrapper']['secrets']['data_bag'],
+          node['consul_wrapper']['secrets']['data_bag_item'],
+        )[filename]
+      end
     end
   end
 
@@ -116,7 +98,7 @@ unless node['consul_wrapper']['disable']
   consul_definition 'consul-http' do
     type 'service'
     parameters(
-      tags: %w(consul consul-http),
+      tags: %w[consul consul-http],
       address: private_ip,
       port: 8500,
     )

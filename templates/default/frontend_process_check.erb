@@ -3,5 +3,5 @@
 workers=$(ps aux|grep -Eo "[n]ginx: worker process"|wc -l)
 echo $workers
 
-if [ "${workers}" -ge "<%= node[:nginx][:worker_processes]%>" ]; then exit 0; fi
+if [ "${workers}" -ge "<%= node['nginx']['config']['worker_processes'] %>" ]; then exit 0; fi
 exit 255

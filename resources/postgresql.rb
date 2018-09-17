@@ -17,14 +17,10 @@ default_action :add
 action :add do
   service_type = 'postgresql'
 
-  # rubocop:disable Style/TrailingCommaInArguments
-  tags(
-    tags +
-    service_name.split(/[-_]/) +
-    node.chef_environment.split(/[-_]/) +
-    %w(postgresql db database)
-  )
-  # rubocop:enable Style/TrailingCommaInArguments
+  tags = new_resource.tags +
+         new_resource.service_name.split(/[-_]/) +
+         node.chef_environment.split(/[-_]/) +
+         %w[postgresql db database]
 
   sudo "#{service_type}-check" do
     user 'consul'
@@ -35,35 +31,37 @@ action :add do
     nopasswd true
   end
 
-  consul_definition "#{service_type}-#{service_name}" do
+  consul_definition "#{service_type}-#{new_resource.service_name}" do
     type 'service'
-    parameters(tags: tags, address: address, port: port)
-    notifies :reload, 'consul_service[consul]'
-  end
-
-  consul_definition "#{service_type}-#{service_name}-check" do
-    type 'check'
     parameters(
-      # rubocop:disable LineLength
-      script: "/usr/bin/sudo -u postgres /usr/bin/psql -p #{port} -U postgres -d postgres -A -t -c 'select 1' >/dev/null 2>&1",
-      # rubocop:enable LineLength
-      interval: '30s',
-      notes: "#{service_type}-#{service_name} should serve queries",
-      service_id: "#{service_type}-#{service_name}",
+      tags: tags,
+      address: new_resource.address,
+      port: new_resource.port,
     )
     notifies :reload, 'consul_service[consul]'
   end
 
-  notes = "#{service_type}-#{service_name} should listen on #{address}:#{port}"
-
-  consul_definition "#{service_type}-#{service_name}-port" do
+  consul_definition "#{service_type}-#{new_resource.service_name}-check" do
     type 'check'
     parameters(
-      tcp: "#{address}:#{port}",
+      script: "/usr/bin/sudo -u postgres /usr/bin/psql -p #{new_resource.port} -U postgres -d postgres -A -t -c 'select 1' >/dev/null 2>&1",
+      interval: '30s',
+      notes: "#{service_type}-#{new_resource.service_name} should serve queries",
+      service_id: "#{service_type}-#{new_resource.service_name}",
+    )
+    notifies :reload, 'consul_service[consul]'
+  end
+
+  notes = "#{service_type}-#{new_resource.service_name} should listen on #{new_resource.address}:#{new_resource.port}"
+
+  consul_definition "#{service_type}-#{new_resource.service_name}-port" do
+    type 'check'
+    parameters(
+      tcp: "#{new_resource.address}:#{new_resource.port}",
       interval: '15s',
       timeout: '1s',
       notes: notes,
-      service_id: "#{service_type}-#{service_name}",
+      service_id: "#{service_type}-#{new_resource.service_name}",
     )
     notifies :reload, 'consul_service[consul]'
   end

@@ -3,8 +3,9 @@ default['consul_wrapper']['private_interface']        = 'eth1'
 default['consul_wrapper']['disable']                  = false
 default['consul_wrapper']['secrets']['data_bag']      = 'secrets'
 default['consul_wrapper']['secrets']['data_bag_item'] = 'consul_certificates'
-default['consul_wrapper']['include_recipes']          = %w()
+default['consul_wrapper']['include_recipes']          = []
 default['consul_wrapper']['listen_http_on_lan']       = true
+default['consul_wrapper']['enable_firewall']          = true
 
 default['consul']['config']['server']              = false
 default['consul']['config']['datacenter']          = 'SETMEPLEASE'
